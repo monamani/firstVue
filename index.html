@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue basics</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">   
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+</head>
+<body>
+  <div id="app">
+    <!--    :class="navBarClasses"-->
+    <navbar-view
+        :theme="theme"
+        :change-theme="changeThemeMethod"
+        :pages="pages" 
+        :active-page="activePage" 
+        :nav-link-click="(index) => activePage = index"  
+    ></navbar-view>
+    <page-viewer 
+      :page="pages[activePage]" 
+ ></page-viewer>
+
+           <!--button class="btn btn-outline-success my-2 my-sm-0"
+                  @click.prevent="useDarknavbar=!useDarknavbar">Change theme - Computed</button-->
+
+  </div>
+    <script>
+        // single app 
+        
+        let app = Vue.createApp({
+            // like initState on flutter
+            data(){
+                return {
+                    activePage:0,  
+                    theme: 'light',
+                    useDarknavbar:false,
+                    pages:[
+                        {
+                            title :"Hello , Home",
+                            description: "Welcome to Home example",
+                            link: {text:'Home',url:"index.html"} 
+                        },
+                        {
+                            title :"Hello , About",
+                            description: "Welcome to Aboput example",
+                            link:{text:'About',url:"about.html"}, 
+                        },
+                        {
+                            title :"Hello , Contact",
+                            description: "Welcome to Contact example",
+                            link:{text:'Contact',url:"contact.html"}
+                        },
+                    ]
+                
+                }
+            },
+            // now like set State 
+            computed : {
+              navBarClasses(){
+                return {
+                  'navbar-light': !this.useDarknavbar,
+                  'bg-light': !this.useDarknavbar,
+                  'navbar-dark': this.useDarknavbar,
+                  'bg-dark': this.useDarknavbar,
+                }
+              }
+            },
+
+            methods:{
+              changeThemeMethod(){
+             
+                let theme = 'light';
+                if(this.theme == 'light'){
+                  theme='dark';
+                }
+
+                this.theme=theme;
+
+                console.log("-- change theme ")
+                console.log(this.theme)
+              }
+
+            },
+           
+        });
+
+        // we pass propos
+       app.component('page-viewer',{
+          props:['page'], // here we remove the - (page-totle)
+          template: `<div class="container">
+             <h1>{{page.title}}</h1>
+              <p>{{page.description}}</p>
+             </div>`
+        })
+// the component is child herite from parent but if something change
+// on the child will not be affect the parent
+
+        app.component('navbar-view',{
+         // it s only read so when we change it it will not affect on the parent
+         // we need to notifiy the parent by event navLinkClick
+          props:['pages','activePage','navLinkClick','theme','changeTheme'], 
+          template: ` 
+          <nav 
+            :class="[\`navbar-\${theme}\` , \`bg-\${theme}\` , 'navbar' , 'navbar-expand-lg']"
+           >
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+        <a class="navbar-brand" href="#">Vue</a>
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">   
+          <li v-for="(page,index) in pages" :key="index" 
+          :class="{active:activePage == index}"  
+          class="nav-item"> 
+            <a 
+            class="nav-link"
+               :href="page.link.url" 
+               :title= "\`This link goes to \${page.link.text} page\`"
+               @click.prevent="navLinkClick(index)" >
+               {{page.link.text}}</a>
+          </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+          <button class="btn btn-outline-success my-2 my-sm-0"
+                  @click.prevent="changeTheme">Change theme - Method</button>
+
+         </form>
+      </div>
+    </nav>`,
+        
+         
+        })
+        app.mount('#app');
+    </script>
+</body>
+
+</html>
